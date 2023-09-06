@@ -21,4 +21,4 @@ sim.add_boundary_condition(set_pressure(4,50))
 
 sim.solve()
 
-sim.print_variables()
+# sim.print_variables()

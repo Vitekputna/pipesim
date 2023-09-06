@@ -110,19 +110,25 @@ class solver:
 
         return nodes_to_solve
 
-
 class pressure_correction_solver(solver):
 
     def solve(self, variables : variables, topology : topology, boundary_condition : list) -> bool:
         print("Incompressible stacionary solver")
-        size = len(variables.node_values[0])
-
+        
         nodes_to_solve = self.get_nodes(topology,boundary_condition)
 
         print(nodes_to_solve)
             
+        size = len(nodes_to_solve)
 
-        # A = np.zeros((size,size))
+        A = np.zeros((size,size))
+
+        for i in range(size):
+            print(topology.nodes[nodes_to_solve[i]].inlet_components)
+            print(topology.nodes[nodes_to_solve[i]].inlet_components)
+
+
+        print(A)
 
 class condition:
     def __init__(self, index : int) -> None:
