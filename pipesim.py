@@ -14,13 +14,8 @@ class node:
         self.outlet_components.append(component_ID)
 
 class component:
-
-    inlet_node = None
-    outlet_node = None
-
-    type = "base"
-
     def __init__(self,inlet_node : int, outlet_node : int) -> None:
+        self.type = "base"
         self.inlet_node = inlet_node
         self.outlet_node = outlet_node
 
@@ -29,9 +24,8 @@ class component:
         self.outlet_node = outlet_node
 
 class pipe(component):
-    type = "pipe"
-
     def __init__(self, inlet_node: int, outlet_node: int) -> None:
+        self.type = "pipe"
         self.length = 0
         self.diameter = 0
         super().__init__(inlet_node,outlet_node)
@@ -76,6 +70,22 @@ class topology:
         for node in self.nodes:
             print(node.inlet_components, node.outlet_components)
 
+class condition:
+    def __init__(self, index : int) -> None:
+        self.index = index
+        self.index_in_vector = 0
+        self.value = 0
+        self.type = "base"
+
+class set_pressure(condition):
+    def __init__(self, node_idx: int, pressure : float) -> None:
+        super().__init__(node_idx)
+        self.type = "node"
+        self.value = pressure
+
+class properies:
+    
+
 class variables:
 
     def __init__(self) -> None:
@@ -109,36 +119,97 @@ class solver:
             nodes_to_solve.append(i)
 
         return nodes_to_solve
+    
+    def find_boundary(self, index : int, boundary_conditions : list) -> condition:
+        
+        for cond in boundary_conditions:
+            if cond.index == index:
+                return cond
+            
+        return None
+    
+    def apply_boundary_conditions(self, variables : variables, boundary_conditions : list) -> None:
+
+        for cond in boundary_conditions:
+            if cond.type == "node":
+                variables.node_values[cond.index_in_vector][cond.index] = cond.value
+
+            if cond.type == "component":
+                variables.node_values[cond.index_in_vector][cond.index] = cond.value
+
 
 class pressure_correction_solver(solver):
 
-    def solve(self, variables : variables, topology : topology, boundary_condition : list) -> bool:
+    def solve(self, variables : variables, topology : topology, boundary_condition : list) -> None:
         print("Incompressible stacionary solver")
         
-        nodes_to_solve = self.get_nodes(topology,boundary_condition)
+        self.apply_boundary_conditions(variables,boundary_condition)
 
-        print(nodes_to_solve)
+        nodes_to_solve = self.get_nodes(topology,boundary_condition)
             
         size = len(nodes_to_solve)
 
         A = np.zeros((size,size))
+        b = np.zeros(size)
+
+        for node in nodes_to_solve:
+
+            inlet_components = topology.nodes[node].inlet_components
+            outlet_components = topology.nodes[node].outlet_components
+
+            row = nodes_to_solve.index(node)
+            
+            for inlet_component in inlet_components:
+
+                inlet_node = topology.components[inlet_component].inlet_node
+                outlet_node = topology.components[inlet_component].outlet_node
+                
+                if inlet_node in nodes_to_solve:
+                    col = nodes_to_solve.index(inlet_node)
+
+                    A[row][col] -= 1
+                else:
+                    boundary_value = variables.node_values[0][inlet_node]
+                    b[row] += boundary_value
+
+                if outlet_node in nodes_to_solve:
+                    col = nodes_to_solve.index(outlet_node)
+
+                    A[row][col] += 1
+                else:
+                    boundary_value = variables.node_values[0][outlet_node]
+                    b[row] -= boundary_value
+
+            for outlet_component in outlet_components:
+
+                inlet_node = topology.components[outlet_component].inlet_node
+                outlet_node = topology.components[outlet_component].outlet_node
+                
+                if inlet_node in nodes_to_solve:
+                    col = nodes_to_solve.index(inlet_node)
+
+                    A[row][col] += 1
+                else:
+                    boundary_value = variables.node_values[0][inlet_node]
+                    b[row] -= boundary_value
+
+                if outlet_node in nodes_to_solve:
+                    col = nodes_to_solve.index(outlet_node)
+
+                    A[row][col] -= 1
+                else:
+                    boundary_value = variables.node_values[0][outlet_node]
+                    b[row] += boundary_value
+
+        # print(A)
+        # print(b)
+
+        result = np.linalg.solve(A,b)
 
         for i in range(size):
-            print(topology.nodes[nodes_to_solve[i]].inlet_components)
-            print(topology.nodes[nodes_to_solve[i]].inlet_components)
+            variables.node_values[0][nodes_to_solve[i]] = result[i]
+        
 
-
-        print(A)
-
-class condition:
-    def __init__(self, index : int) -> None:
-        self.index = index
-
-class set_pressure(condition):
-    def __init__(self, node_idx: int, pressure : float) -> None:
-        type = "node"
-        self.pressure = pressure
-        super().__init__(node_idx)
         
 class pipesim:
 
