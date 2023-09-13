@@ -85,6 +85,8 @@ class set_pressure(condition):
 
 class properies:
     
+    def __init__(self) -> None:
+        pass
 
 class variables:
 
