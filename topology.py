@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class node:
 
     def __init__(self) -> None:
@@ -30,6 +31,15 @@ class pipe(component):
         self.diameter = 0
         super().__init__(inlet_node,outlet_node)
 
+    def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
+
+        density = (inlet_density+outlet_density)/2
+
+        return (np.pi*density*self.diameter**4)/(128*viscosity*self.length)
+        
+
+        
+
 class super_pipe(component):
     def __init__(self, inlet_node: int, outlet_node: int) -> None:
         super().__init__(inlet_node, outlet_node)
@@ -42,7 +52,7 @@ class super_pipe(component):
 
         self.resistance_coeff = 1
 
-    def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float) -> float:
+    def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
 
         gravity = 9.81
         density = (inlet_density+outlet_density)/2
