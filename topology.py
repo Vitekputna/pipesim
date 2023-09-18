@@ -24,36 +24,38 @@ class component:
         self.inlet_node = inlet_node
         self.outlet_node = outlet_node
 
+    def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
+        return 0
+
 class pipe(component):
     def __init__(self, inlet_node: int, outlet_node: int) -> None:
-        self.type = "pipe"
-        self.length = 0
-        self.diameter = 0
         super().__init__(inlet_node,outlet_node)
+        self.type = "pipe"
+        self.length = 1
+        self.inlet_area = 1
+        self.outlet_area = 1
 
     def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
 
+        area = (self.inlet_area+self.outlet_area)/2
+
+        diameter = np.sqrt(4*area/np.pi)
+
         density = (inlet_density+outlet_density)/2
-
-        return (np.pi*density*self.diameter**4)/(128*viscosity*self.length)
+        return (np.pi*density*diameter**4)/(128*viscosity*self.length)
         
-
-        
-
-class super_pipe(component):
+class general(component):
     def __init__(self, inlet_node: int, outlet_node: int) -> None:
         super().__init__(inlet_node, outlet_node)
-        self.type = "superpipe"
-        self.length = 0
-        self.inlet_area = 0
-        self.outlet_area = 0
+        self.type = "general"
+        self.length = 1
+        self.inlet_area = 1
+        self.outlet_area = 1
         self.inlet_height = 0
         self.outlet_height = 0
-
         self.resistance_coeff = 1
 
     def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
-
         gravity = 9.81
         density = (inlet_density+outlet_density)/2
         area = (self.inlet_area+self.outlet_area)/2
@@ -91,7 +93,6 @@ class topology:
     def __init__(self) -> None:
         self.components = []
         self.nodes = []
-
         self.N_nodes = 0
         self.N_components = 0
 
