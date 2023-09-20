@@ -1,8 +1,6 @@
-import numpy as np
-
+from properties import properties
 
 class node:
-
     def __init__(self) -> None:
         self.inlet_components = []
         self.outlet_components = []
@@ -24,72 +22,11 @@ class component:
         self.inlet_node = inlet_node
         self.outlet_node = outlet_node
 
-    def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
+    # def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
+    def get_coeff(self, inlet_node_values : list, outlet_node_values : list, component_values : list, properties : properties) -> float:
         return 0
 
-class pipe(component):
-    def __init__(self, inlet_node: int, outlet_node: int) -> None:
-        super().__init__(inlet_node,outlet_node)
-        self.type = "pipe"
-        self.length = 1
-        self.inlet_area = 1
-        self.outlet_area = 1
-
-    def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
-
-        area = (self.inlet_area+self.outlet_area)/2
-
-        diameter = np.sqrt(4*area/np.pi)
-
-        density = (inlet_density+outlet_density)/2
-        return (np.pi*density*diameter**4)/(128*viscosity*self.length)
-        
-class general(component):
-    def __init__(self, inlet_node: int, outlet_node: int) -> None:
-        super().__init__(inlet_node, outlet_node)
-        self.type = "general"
-        self.length = 1
-        self.inlet_area = 1
-        self.outlet_area = 1
-        self.inlet_height = 0
-        self.outlet_height = 0
-        self.resistance_coeff = 1
-
-    def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
-        gravity = 9.81
-        density = (inlet_density+outlet_density)/2
-        area = (self.inlet_area+self.outlet_area)/2
-
-        eps = 1e-6 # Division by zero
-
-        A1 = ((area/self.inlet_area)**2)*density**2
-        A2 = ((area/self.outlet_area)**2)*density**2
-
-        K1 = area*density/(np.abs(inlet_pressure-outlet_pressure + eps))
-
-        K2 = np.abs((outlet_pressure-inlet_pressure + gravity*(self.outlet_height*outlet_density-self.inlet_height*inlet_density))/
-                    (A1/inlet_density - A2/outlet_density - self.resistance_coeff*A1/inlet_density))
-
-        return K1*np.sqrt(2*K2)
-    
-    def bernouli_residual(self, massflow : float, inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float) -> float:
-
-        gravity = 9.81
-        density = (inlet_density+outlet_density)/2
-        area = (self.inlet_area+self.outlet_area)/2
-
-        velocity = massflow/(area*density)
-
-        inlet_velocity = area*density/(self.inlet_area*inlet_density)*velocity
-        outlet_velocity = area*density/(self.outlet_area*outlet_density)*velocity
-
-        inlet = inlet_pressure+gravity*inlet_density*self.inlet_height + 0.5*inlet_density*inlet_velocity**2
-        outlet = outlet_pressure + gravity*outlet_density*self.outlet_height + 0.5*outlet_density*outlet_velocity**2 + 0.5*self.resistance_coeff*inlet_density*inlet_velocity**2
-
-        return inlet-outlet
-
 class topology:
-
     def __init__(self) -> None:
         self.components = []
         self.nodes = []

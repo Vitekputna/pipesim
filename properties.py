@@ -1,6 +1,7 @@
 class properties:
     
     def __init__(self) -> None:
+        self.gravity = 9.81
         pass
 
     def density(self, temperature, pressure) -> float:

@@ -8,9 +8,12 @@ class solver:
 
     def __init__(self) -> None:
          self.residual = []
+         self.density_idx = 0
+         self.pressure_idx = 0
+         self.velocity_idx = 0
 
-    def solve(self, variables : variables, topology : topology, boundary_condition : list) -> bool:
-        return True
+    def solve(self, variables : variables, topology : topology, boundary_condition : list) -> None:
+        pass
     
     def get_nodes(self, topology : topology, boundary_condition : list) -> list:
         nodes_to_solve = []
@@ -40,10 +43,10 @@ class solver:
 
         for cond in boundary_conditions:
             if cond.type == "node":
-                variables.node_values[cond.index_in_vector][cond.index] = cond.value
+                variables.node_values[cond.index][cond.index_in_vector] = cond.value
 
             if cond.type == "component":
-                variables.node_values[cond.index_in_vector][cond.index] = cond.value
+                variables.node_values[cond.index][cond.index_in_vector] = cond.value
 
 
     def compute_residual(self, properties : properties, variables : variables, topology : topology, boundary_condition : list) -> float:
@@ -67,10 +70,10 @@ class solver:
                 inlet_node = topology.components[inlet_component].inlet_node
                 outlet_node = topology.components[inlet_component].outlet_node
 
-                C = topology.components[inlet_component].get_coeff(variables.node_values[0][inlet_node],variables.node_values[0][outlet_node],density,density,viscosity)
+                C = topology.components[inlet_component].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[inlet_component],properties)
 
-                outlet_pressure = variables.node_values[0][outlet_node]
-                inlet_pressure = variables.node_values[0][inlet_node]
+                outlet_pressure = variables.node_values[outlet_node][self.pressure_idx]
+                inlet_pressure = variables.node_values[inlet_node][self.pressure_idx]
 
                 mass_flow += C*(outlet_pressure-inlet_pressure)
 
@@ -79,10 +82,10 @@ class solver:
                 inlet_node = topology.components[outlet_component].inlet_node
                 outlet_node = topology.components[outlet_component].outlet_node
 
-                C = topology.components[outlet_component].get_coeff(variables.node_values[0][inlet_node],variables.node_values[0][outlet_node],density,density,viscosity)
+                C = topology.components[outlet_component].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[outlet_component],properties)
 
-                outlet_pressure = variables.node_values[0][outlet_node]
-                inlet_pressure = variables.node_values[0][inlet_node]
+                outlet_pressure = variables.node_values[outlet_node][self.pressure_idx]
+                inlet_pressure = variables.node_values[inlet_node][self.pressure_idx]
 
                 mass_flow -= C*(outlet_pressure-inlet_pressure)
 
@@ -99,15 +102,13 @@ class solver:
             inlet_node = component.inlet_node
             outlet_node = component.outlet_node
 
-            outlet_pressure = variables.node_values[0][outlet_node]
-            inlet_pressure = variables.node_values[0][inlet_node]
+            outlet_pressure = variables.node_values[outlet_node][self.pressure_idx]
+            inlet_pressure = variables.node_values[inlet_node][self.pressure_idx]
 
             outlet_density = properties.density(300,outlet_pressure)
             inlet_density = properties.density(300,inlet_pressure)
 
-            viscosity = properties.viscosity(300,inlet_pressure)
-
-            C = component.get_coeff(inlet_pressure,outlet_pressure,inlet_density,outlet_density,viscosity)
+            C = topology.components[i].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[i],properties)
 
             mass_flux = -C*(outlet_pressure-inlet_pressure)
 
@@ -116,7 +117,7 @@ class solver:
 
             velocity = mass_flux/(area*density)
 
-            variables.component_values[0][i] = velocity
+            variables.component_values[i][self.velocity_idx] = velocity
 
             i += 1
 
@@ -153,7 +154,7 @@ class laminar_pipe_solver(solver):
                 inlet_node = topology.components[inlet_component].inlet_node
                 outlet_node = topology.components[inlet_component].outlet_node
 
-                C = topology.components[inlet_component].get_coeff(variables.node_values[0][inlet_node],variables.node_values[0][outlet_node],density,density,viscosity)
+                C = topology.components[inlet_component].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[inlet_component],properties)
                 
                 if inlet_node in nodes_to_solve:
                     col = nodes_to_solve.index(inlet_node)
@@ -176,7 +177,7 @@ class laminar_pipe_solver(solver):
                 inlet_node = topology.components[outlet_component].inlet_node
                 outlet_node = topology.components[outlet_component].outlet_node
 
-                C = topology.components[outlet_component].get_coeff(variables.node_values[0][inlet_node],variables.node_values[0][outlet_node],density,density,viscosity)
+                C = topology.components[outlet_component].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[outlet_component],properties)
                 
                 if inlet_node in nodes_to_solve:
                     col = nodes_to_solve.index(inlet_node)
@@ -221,8 +222,6 @@ class pressure_correction_solver(solver):
 
         size = len(nodes_to_solve)
 
-        # TESTING ONLY
-
         for i in range(self.max_iterations):
 
             A = np.zeros((size,size))
@@ -240,32 +239,24 @@ class pressure_correction_solver(solver):
                     inlet_node = topology.components[inlet_component].inlet_node
                     outlet_node = topology.components[inlet_component].outlet_node
 
-                    outlet_pressure = variables.node_values[0][outlet_node]
-                    inlet_pressure = variables.node_values[0][inlet_node]
-
-                    outlet_density = properties.density(300,outlet_pressure)
-                    inlet_density = properties.density(300,inlet_pressure)
-
-                    viscosity = properties.viscosity(300,inlet_pressure)
-
-                    C = topology.components[inlet_component].get_coeff(inlet_pressure,outlet_pressure,inlet_density,outlet_density,viscosity)
+                    C = topology.components[inlet_component].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[inlet_component],properties)
                     
                     if inlet_node in nodes_to_solve:
                         col = nodes_to_solve.index(inlet_node)
 
                         A[row][col] -= C
-                        b[row] += C*variables.node_values[0][inlet_node]
+                        b[row] += C*variables.node_values[inlet_node][self.pressure_idx]
                     else:
-                        boundary_value = variables.node_values[0][inlet_node]
+                        boundary_value = variables.node_values[inlet_node][self.pressure_idx]
                         b[row] += boundary_value*C
 
                     if outlet_node in nodes_to_solve:
                         col = nodes_to_solve.index(outlet_node)
 
                         A[row][col] += C
-                        b[row] -= C*variables.node_values[0][outlet_node]
+                        b[row] -= C*variables.node_values[outlet_node][self.pressure_idx]
                     else:
-                        boundary_value = variables.node_values[0][outlet_node]
+                        boundary_value = variables.node_values[outlet_node][self.pressure_idx]
                         b[row] -= boundary_value*C
 
                 for outlet_component in outlet_components:
@@ -273,38 +264,30 @@ class pressure_correction_solver(solver):
                     inlet_node = topology.components[outlet_component].inlet_node
                     outlet_node = topology.components[outlet_component].outlet_node
 
-                    outlet_pressure = variables.node_values[0][outlet_node]
-                    inlet_pressure = variables.node_values[0][inlet_node]
-
-                    outlet_density = properties.density(300,outlet_pressure)
-                    inlet_density = properties.density(300,inlet_pressure)
-
-                    viscosity = properties.viscosity(300,inlet_pressure)
-
-                    C = topology.components[outlet_component].get_coeff(inlet_pressure,outlet_pressure,inlet_density,outlet_density,viscosity)
+                    C = topology.components[outlet_component].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[outlet_component],properties)
                     
                     if inlet_node in nodes_to_solve:
                         col = nodes_to_solve.index(inlet_node)
 
                         A[row][col] += C
-                        b[row] -= C*variables.node_values[0][inlet_node]
+                        b[row] -= C*variables.node_values[inlet_node][self.pressure_idx]
                     else:
-                        boundary_value = variables.node_values[0][inlet_node]
+                        boundary_value = variables.node_values[inlet_node][self.pressure_idx]
                         b[row] -= boundary_value*C
 
                     if outlet_node in nodes_to_solve:
                         col = nodes_to_solve.index(outlet_node)
 
                         A[row][col] -= C
-                        b[row] += C*variables.node_values[0][outlet_node]
+                        b[row] += C*variables.node_values[outlet_node][self.pressure_idx]
                     else:
-                        boundary_value = variables.node_values[0][outlet_node]
+                        boundary_value = variables.node_values[outlet_node][self.pressure_idx]
                         b[row] += boundary_value*C
 
             result = np.linalg.solve(A,b)
 
             for i in range(size):
-                variables.node_values[0][nodes_to_solve[i]] += self.relaxation_factor*result[i]
+                variables.node_values[nodes_to_solve[i]][self.pressure_idx] += self.relaxation_factor*result[i]
 
             self.residual.append(self.compute_residual(properties,variables,topology,boundary_condition))
 
