@@ -8,7 +8,7 @@ class solver:
 
     def __init__(self) -> None:
          self.residual = []
-         self.density_idx = 0
+    
          self.pressure_idx = 0
          self.velocity_idx = 0
 
@@ -265,7 +265,7 @@ class pressure_correction_solver(solver):
                     outlet_node = topology.components[outlet_component].outlet_node
 
                     C = topology.components[outlet_component].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[outlet_component],properties)
-                    
+
                     if inlet_node in nodes_to_solve:
                         col = nodes_to_solve.index(inlet_node)
 
@@ -292,3 +292,4 @@ class pressure_correction_solver(solver):
             self.residual.append(self.compute_residual(properties,variables,topology,boundary_condition))
 
             self.solve_velocity(properties,variables,topology,boundary_condition)
+        

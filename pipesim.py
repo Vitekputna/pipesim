@@ -38,15 +38,40 @@ class pipesim:
         print(self.variables.component_values)
 
     def plot_residual(self) -> None:
+
+        max_residual = np.max(self.solver.residual)
+
         plt.figure()
+        plt.title("Residual")
         plt.yscale("log")
-        plt.plot(self.solver.residual,'x')
+        plt.plot(self.solver.residual/max_residual,'x')
+        plt.grid()
         plt.show()
 
-    
+    def plot_node_values(self, index : int) -> None:
 
-    
+        size = len(self.variables.node_values)
 
-    
+        vector = np.zeros(size)
 
+        for i in range(size):
+            vector[i] = self.variables.node_values[i][index]
 
+        plt.figure()
+        plt.plot(vector)
+        plt.grid()
+
+    def plot_component_values(self, index : int) -> None:
+
+        size = len(self.variables.component_values)
+
+        vector = np.zeros(size)
+
+        for i in range(size):
+            vector[i] = self.variables.component_values[i][index]
+
+        plt.figure()
+        plt.plot(vector)
+        plt.grid()
+        
+        

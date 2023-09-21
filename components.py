@@ -114,19 +114,22 @@ class pipe(general):
         self.type = "pipe"
 
         self.critical_Re = 2300
+        self.smoothing_interval = 1000
         self.roughness = 1e-3
 
     def get_lambda(self, Re : float) -> float:
-        return 1
         # Laminar flow
         if Re < self.critical_Re:
             return laminar(Re)
+        elif Re >= self.critical_Re and Re < self.critical_Re + self.smoothing_interval:
+            phi = (self.critical_Re+self.smoothing_interval-Re)/self.smoothing_interval
+
+            return phi*laminar(Re) + (1-phi)*Churchill(Re,self.roughness,self.diameter())
         else:
             return Churchill(Re,self.roughness,self.diameter())
         
     def get_resistance_coeff(self, Re : float) -> float:
         return self.get_lambda(Re)*self.length/self.diameter()
-        # return 1
         
 
         

@@ -16,14 +16,32 @@ class constant_properties(properties):
         self.density_value = 0
         self.viscosity_value = 0
 
-    def set_density(self, value):
+    def set_density(self, value) -> None:
         self.density_value = value
 
-    def set_viscosity(self, value):
+    def set_viscosity(self, value) -> None:
         self.viscosity_value = value
 
     def density(self, temperature, pressure) -> float:
         return self.density_value
 
+    def viscosity(self, temperature, pressure) -> float:
+        return self.viscosity_value
+    
+class compresible_isothermal(properties):
+    def __init__(self) -> None:
+        super().__init__()
+        self.compresibility = 1
+        self.viscosity_value = 0
+
+    def set_compresibility(self, value) -> None:
+        self.compresibility = value
+
+    def set_viscosity(self, value) -> None:
+        self.viscosity_value = value
+
+    def density(self, temperature, pressure) -> float:
+        return self.compresibility*pressure
+    
     def viscosity(self, temperature, pressure) -> float:
         return self.viscosity_value
