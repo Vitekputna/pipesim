@@ -26,10 +26,10 @@ class laminar_pipe(component):
         inlet_pressure = inlet_node_values[0]
         outlet_pressure = outlet_node_values[0]
 
-        inlet_density = properties.density(300,inlet_pressure)
-        outlet_density = properties.density(300,outlet_pressure)
+        inlet_density = properties.density(properties.temperature,inlet_pressure)
+        outlet_density = properties.density(properties.temperature,outlet_pressure)
 
-        viscosity = properties.viscosity(300,(inlet_pressure+outlet_pressure)/2)
+        viscosity = properties.viscosity(properties.temperature,(inlet_pressure+outlet_pressure)/2)
 
         diameter = np.sqrt(4*self.area/np.pi)
         density = (inlet_density+outlet_density)/2
@@ -54,6 +54,16 @@ class general(component):
         self.inlet_area = self.area
         self.outlet_area = self.area
 
+    def set_inlet_diameter(self, diameter : float) -> None:
+        area = np.pi*(diameter**2)/4
+        self.inlet_area = area
+        self.area = (self.inlet_area+self.outlet_area)/2
+
+    def set_outlet_diameter(self, diameter : float) -> None:
+        area = np.pi*(diameter**2)/4
+        self.outlet_area = area
+        self.area = (self.inlet_area+self.outlet_area)/2
+
     def diameter(self) -> float:
         self.area = (self.inlet_area+self.outlet_area)/2
         return np.sqrt(4*self.area/np.pi)
@@ -67,10 +77,10 @@ class general(component):
         inlet_pressure = inlet_node_values[0]
         outlet_pressure = outlet_node_values[0]
 
-        inlet_density = properties.density(300,inlet_pressure)
-        outlet_density = properties.density(300,outlet_pressure)
+        inlet_density = properties.density(properties.temperature,inlet_pressure)
+        outlet_density = properties.density(properties.temperature,outlet_pressure)
 
-        viscosity = properties.viscosity(300,(inlet_pressure+outlet_pressure)/2)
+        viscosity = properties.viscosity(properties.temperature,(inlet_pressure+outlet_pressure)/2)
 
         density = (inlet_density+outlet_density)/2
         area = (self.inlet_area+self.outlet_area)/2

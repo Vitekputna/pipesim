@@ -53,8 +53,8 @@ class solver:
         
         nodes_to_solve = self.get_nodes(topology,boundary_condition)
 
-        density = properties.density(300,101325)
-        viscosity = properties.viscosity(300,101325)
+        density = properties.density(properties.temperature,101325)
+        viscosity = properties.viscosity(properties.temperature,101325)
 
         total_mass_flow_residual = 0
 
@@ -105,8 +105,8 @@ class solver:
             outlet_pressure = variables.node_values[outlet_node][self.pressure_idx]
             inlet_pressure = variables.node_values[inlet_node][self.pressure_idx]
 
-            outlet_density = properties.density(300,outlet_pressure)
-            inlet_density = properties.density(300,inlet_pressure)
+            outlet_density = properties.density(properties.temperature,outlet_pressure)
+            inlet_density = properties.density(properties.temperature,inlet_pressure)
 
             C = topology.components[i].get_coeff(variables.node_values[inlet_node],variables.node_values[outlet_node],variables.component_values[i],properties)
 

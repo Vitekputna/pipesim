@@ -1,5 +1,6 @@
 import numpy as np
 from topology import *
+from components import *
 from solvers import * 
 from conditions import condition
 from variables import variables
@@ -13,6 +14,33 @@ class pipesim:
         self.variables = variables()
         self.properties = properties()
         self.boundary_conditions = []
+
+        self.internal_node_offset = 1000
+        self.internal_nodes = []
+
+    def add_pipe(self, inlet_node : int, outlet_node : int, diameter : float, length : float, N_divisions = 10) -> None:
+
+        for i in range(N_divisions):
+
+            if i == 0:
+                inlet = inlet_node
+                outlet = inlet+1+self.internal_node_offset
+
+            inlet = inlet_node
+            outlet = inlet+1
+
+            print(inlet,outlet)
+
+            comp = pipe(inlet_node,outlet_node)
+            comp.length = length
+            comp.set_diameter(diameter)
+
+        
+    def add_area_change(self) -> None:
+        pass
+
+    def add_local_loss(self) -> None:
+        pass
 
     def set_solver(self, solver : solver) -> None:
         self.solver = solver()
@@ -48,9 +76,15 @@ class pipesim:
         plt.grid()
         plt.show()
 
-    def plot_node_values(self, index : int) -> None:
-
+    def plot_pressure(self, length_scale = False) -> None:
+        index = self.solver.pressure_idx
         size = len(self.variables.node_values)
+
+        length = np.linspace(0,size-1,size)
+
+        if length_scale:
+            for i in range(1,size):
+                length[i] = length[i-1] + self.topology.components[i-1].length
 
         vector = np.zeros(size)
 
@@ -58,20 +92,64 @@ class pipesim:
             vector[i] = self.variables.node_values[i][index]
 
         plt.figure()
-        plt.plot(vector)
+        plt.title("pressure")
+        plt.plot(length,vector)
         plt.grid()
 
-    def plot_component_values(self, index : int) -> None:
-
+    def plot_velocity(self, length_scale = False) -> None:
+        index = self.solver.velocity_idx
         size = len(self.variables.component_values)
 
-        vector = np.zeros(size)
+        vector = np.zeros(2*size)
+        length = np.zeros(2*size)
 
         for i in range(size):
-            vector[i] = self.variables.component_values[i][index]
+            comp = self.topology.components[i]
+            velocity = self.variables.component_values[i][index]
+
+            inlet_pressure = self.variables.node_values[comp.inlet_node][self.solver.pressure_idx]
+            outlet_pressure = self.variables.node_values[comp.outlet_node][self.solver.pressure_idx]
+            
+            area = comp.area
+            inlet_area = comp.inlet_area
+            outlet_area = comp.outlet_area
+
+            inlet_density = self.properties.density(self.properties.temperature,inlet_pressure)
+            outlet_density = self.properties.density(self.properties.temperature,outlet_pressure)
+
+            density = (inlet_density+outlet_density)/2
+
+            inlet_velocity = velocity*area*density/(inlet_area*inlet_density)
+            outlet_velocity = velocity*area*density/(outlet_area*outlet_density)
+
+            vector[2*i] = inlet_velocity
+            vector[2*i+1] = outlet_velocity
+
+            if i == 0:
+                length[2*i] = 0
+            else:
+                length[2*i] = length[2*i-1]
+            length[2*i+1] = length[2*i] + comp.length
 
         plt.figure()
-        plt.plot(vector)
+        plt.title("velocity")
+        plt.plot(length,vector)
         plt.grid()
+
+    def mass_fluxes(self) -> np.array:
+        size = len(self.variables.component_values)
+        fluxes = np.zeros(size)
+
+        for i in range(size):
+            area = self.topology.components[i].area
+            pressure = (self.variables.node_values[self.topology.components[i].inlet_node] + self.variables.node_values[self.topology.components[i].outlet_node])/2
+            density = self.properties.density(self.properties.temperature,pressure)
+            velocity = self.variables.component_values[i]
+
+            fluxes[i] = area*density*velocity
+
+        return fluxes
+
+        
         
         

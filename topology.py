@@ -22,7 +22,6 @@ class component:
         self.inlet_node = inlet_node
         self.outlet_node = outlet_node
 
-    # def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
     def get_coeff(self, inlet_node_values : list, outlet_node_values : list, component_values : list, properties : properties) -> float:
         return 0
 
