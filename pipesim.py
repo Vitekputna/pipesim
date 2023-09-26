@@ -16,7 +16,7 @@ class pipesim:
         self.boundary_conditions = []
 
         self.internal_node_offset = 1000
-        self.internal_nodes = []
+        self.internal_nodes = [1000]
 
     def add_pipe(self, inlet_node : int, outlet_node : int, diameter : float, length : float, N_divisions = 10) -> None:
 
@@ -24,16 +24,22 @@ class pipesim:
 
             if i == 0:
                 inlet = inlet_node
-                outlet = inlet+1+self.internal_node_offset
+            else:
+                inlet = outlet
 
-            inlet = inlet_node
-            outlet = inlet+1
+            if i == N_divisions-1:
+                outlet = outlet_node
+            else:
+                self.internal_nodes.append(self.internal_nodes[-1]+1)
+                outlet = self.internal_nodes[-1]
 
-            print(inlet,outlet)
+            # print(inlet,outlet)
 
-            comp = pipe(inlet_node,outlet_node)
+            comp = pipe(inlet,outlet)
             comp.length = length
             comp.set_diameter(diameter)
+
+            self.add_component(comp)
 
         
     def add_area_change(self) -> None:

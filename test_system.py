@@ -7,15 +7,16 @@ import matplotlib.pyplot as plt
 
 sim = pipesim()
 
-# sim.add_pipe(0,10,1,1,10)
+# sim.add_pipe(0,1,1,1,3)
+# sim.add_pipe(1,2,1,1,3)
 
-comp = pipe(0,1)
+comp = pipe(0,1000)
 comp.length = 1
 comp.roughness = 0.045
 comp.set_diameter(0.03)
 sim.add_component(comp)
 
-comp = general(1,2)
+comp = general(1000,2)
 comp.length = 0.01
 comp.set_diameter(0.03)
 comp.resistance_coeff = 100
@@ -47,13 +48,13 @@ sim.solver.max_iterations = 250
 sim.solver.relaxation_factor = 0.9
 sim.solver.pressure_idx = 0
 
-# sim.set_properties_model(constant_properties)
-# sim.properties.set_density(1000)
-# sim.properties.set_viscosity(0.001) 
+sim.set_properties_model(constant_properties)
+sim.properties.set_density(1000)
+sim.properties.set_viscosity(0.001) 
 
-sim.set_properties_model(CRSprop_isothermal)
-sim.properties.set_specie("N2O")
-sim.properties.temperature = 300
+# sim.set_properties_model(CRSprop_isothermal)
+# sim.properties.set_specie("N2O")
+# sim.properties.temperature = 300
 
 sim.add_boundary_condition(set_pressure(0,6e6))
 sim.add_boundary_condition(set_pressure(5,2.5e6))
@@ -64,5 +65,5 @@ sim.plot_velocity(length_scale=True)
 sim.plot_pressure(length_scale=True)
 sim.plot_residual()
 
-print(sim.mass_fluxes())
-plt.show()
+# print(sim.mass_fluxes())
+# plt.show()

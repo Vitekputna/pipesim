@@ -18,16 +18,29 @@ class solver:
     def get_nodes(self, topology : topology, boundary_condition : list) -> list:
         nodes_to_solve = []
         found = False
-        for i in range(topology.N_nodes):
+
+        for index in topology.nodes: 
             for boundary in boundary_condition:
-                if boundary.index == i:
-                    found = True
+                if boundary.index == index:
+                    found = True    
 
             if found == True:
                 found = False
                 continue
 
-            nodes_to_solve.append(i)
+            nodes_to_solve.append(index)
+
+
+        # for i in range(topology.N_nodes):
+        #     for boundary in boundary_condition:
+        #         if boundary.index == i:
+        #             found = True
+
+        #     if found == True:
+        #         found = False
+        #         continue
+
+        #     nodes_to_solve.append(i)
 
         return nodes_to_solve
     
@@ -219,6 +232,8 @@ class pressure_correction_solver(solver):
         self.apply_boundary_conditions(variables,boundary_condition)
 
         nodes_to_solve = self.get_nodes(topology,boundary_condition)
+        
+        print(nodes_to_solve)
 
         size = len(nodes_to_solve)
 
