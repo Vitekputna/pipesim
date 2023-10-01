@@ -16,12 +16,14 @@ class pipesim:
         self.boundary_conditions = []
 
         self.internal_node_offset = 1000
-        self.internal_nodes = [1000]
+        self.internal_nodes = []
+        # self.internal_components = []
 
     def add_pipe(self, inlet_node : int, outlet_node : int, diameter : float, length : float, N_divisions = 10) -> None:
 
-        for i in range(N_divisions):
+        dl = length/N_divisions
 
+        for i in range(N_divisions):
             if i == 0:
                 inlet = inlet_node
             else:
@@ -30,16 +32,20 @@ class pipesim:
             if i == N_divisions-1:
                 outlet = outlet_node
             else:
-                self.internal_nodes.append(self.internal_nodes[-1]+1)
-                outlet = self.internal_nodes[-1]
 
-            # print(inlet,outlet)
+                if len(self.internal_nodes) == 0:
+                    self.internal_nodes.append(self.internal_node_offset)
+                    outlet = self.internal_nodes[-1]    
+                else:
+                    self.internal_nodes.append(self.internal_nodes[-1]+1)
+                    outlet = self.internal_nodes[-1]
 
             comp = pipe(inlet,outlet)
-            comp.length = length
+            comp.length = dl
             comp.set_diameter(diameter)
-
             self.add_component(comp)
+
+        self.variables.create_hash_table(self.topology)
 
         
     def add_area_change(self) -> None:
@@ -62,7 +68,12 @@ class pipesim:
         self.variables.init_variables(self.topology.N_nodes,self.topology.N_components)
 
     def add_boundary_condition(self,boundary_condition : condition) -> None:
-        self.boundary_conditions.append(boundary_condition)
+
+        if boundary_condition.index in self.topology.nodes:
+            self.boundary_conditions.append(boundary_condition)
+        else:
+            print("Error node in boundary condition is not defined")
+            exit()
 
     def solve(self) -> None:
         self.solver.solve(self.properties,self.variables,self.topology,self.boundary_conditions)
@@ -113,8 +124,8 @@ class pipesim:
             comp = self.topology.components[i]
             velocity = self.variables.component_values[i][index]
 
-            inlet_pressure = self.variables.node_values[comp.inlet_node][self.solver.pressure_idx]
-            outlet_pressure = self.variables.node_values[comp.outlet_node][self.solver.pressure_idx]
+            inlet_pressure = self.variables.node_value(comp.inlet_node)[self.solver.pressure_idx]
+            outlet_pressure = self.variables.node_value(comp.outlet_node)[self.solver.pressure_idx]
             
             area = comp.area
             inlet_area = comp.inlet_area
@@ -148,7 +159,7 @@ class pipesim:
 
         for i in range(size):
             area = self.topology.components[i].area
-            pressure = (self.variables.node_values[self.topology.components[i].inlet_node] + self.variables.node_values[self.topology.components[i].outlet_node])/2
+            pressure = (self.variables.node_value(self.topology.components[i].inlet_node) + self.variables.node_value(self.topology.components[i].outlet_node))/2
             density = self.properties.density(self.properties.temperature,pressure)
             velocity = self.variables.component_values[i]
 

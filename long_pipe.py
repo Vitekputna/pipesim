@@ -46,10 +46,6 @@ sim.add_boundary_condition(set_pressure(N,2.5e6))
 # Run solver
 sim.solve()
 
-sim.plot_component_values(0)
-sim.plot_node_values(0)
 sim.plot_residual()
-
-print(sim.mass_fluxes())
 
 plt.show()
