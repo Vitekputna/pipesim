@@ -153,6 +153,36 @@ class pipesim:
         plt.plot(length,vector)
         plt.grid()
 
+    def plot_density(self, length_scale = False) -> None:
+        index = self.solver.velocity_idx
+        size = len(self.variables.component_values)
+
+        vector = np.zeros(2*size)
+        length = np.zeros(2*size)
+
+        for i in range(size):
+            comp = self.topology.components[i]
+
+            inlet_pressure = self.variables.node_value(comp.inlet_node)[self.solver.pressure_idx]
+            outlet_pressure = self.variables.node_value(comp.outlet_node)[self.solver.pressure_idx]
+
+            inlet_density = self.properties.density(self.properties.temperature,inlet_pressure)
+            outlet_density = self.properties.density(self.properties.temperature,outlet_pressure)
+
+            vector[2*i] = inlet_density
+            vector[2*i+1] = outlet_density
+
+            if i == 0:
+                length[2*i] = 0
+            else:
+                length[2*i] = length[2*i-1]
+            length[2*i+1] = length[2*i] + comp.length
+
+        plt.figure()
+        plt.title("density")
+        plt.plot(length,vector)
+        plt.grid()
+
     def mass_fluxes(self) -> np.array:
         size = len(self.variables.component_values)
         fluxes = np.zeros(size)

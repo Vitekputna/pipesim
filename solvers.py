@@ -13,7 +13,7 @@ class solver:
          self.velocity_idx = 0
 
     def solve(self, variables : variables, topology : topology, boundary_condition : list) -> None:
-        variables.init_values(1,2,1,2)
+        variables.init_values(1e5,2e5,1,2)
     
     def get_nodes(self, topology : topology, boundary_condition : list) -> list:
         nodes_to_solve = []
