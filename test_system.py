@@ -37,8 +37,8 @@ sim.solver.pressure_idx = 0
 # sim.properties.set_viscosity(0.001) 
 
 sim.set_properties_model(CRSprop_isothermal)
-sim.properties.set_specie("N2O")
-sim.properties.temperature = 300
+sim.properties.set_specie("TEST")
+sim.properties.temperature = 250
 
 sim.add_boundary_condition(set_pressure(1,6e6))
 sim.add_boundary_condition(set_pressure(2,4e6))
