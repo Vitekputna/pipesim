@@ -46,13 +46,16 @@ class pipesim:
             self.add_component(comp)
 
         self.variables.create_hash_table(self.topology)
-
-        
+       
     def add_area_change(self) -> None:
         pass
 
-    def add_local_loss(self) -> None:
-        pass
+    def add_local_loss(self, inlet_node :int, outlet_node : int, diameter : float, length : float, resistance_coefficient : float) -> None:
+        comp = general(inlet_node,outlet_node)
+        comp.set_diameter(diameter)
+        comp.length = length
+        comp.resistance_coeff = resistance_coefficient
+        self.add_component(comp)
 
     def set_solver(self, solver : solver) -> None:
         self.solver = solver()
@@ -181,6 +184,36 @@ class pipesim:
         plt.figure()
         plt.title("density")
         plt.plot(length,vector)
+        plt.grid()
+
+    def plot_mass_flux(self, length_scale = False) -> None:
+
+        component_mass_flux = self.mass_fluxes()
+
+        size = len(self.variables.component_values)
+        length = np.zeros(2*size)
+        node_mass_flux = np.zeros(2*size)
+
+        if length_scale:
+            for i in range(size):
+                comp = self.topology.components[i]
+
+                node_mass_flux[2*i] = component_mass_flux[i]
+                node_mass_flux[2*i+1] = component_mass_flux[i]
+
+                if i == 0:
+                    length[2*i] = 0
+                else:
+                    length[2*i] = length[2*i-1]
+                length[2*i+1] = length[2*i] + comp.length
+
+        plt.figure()
+        plt.title("Hmotnostní tok")
+
+        if length_scale:
+            plt.plot(length,node_mass_flux)
+        else:
+            plt.plot(node_mass_flux)
         plt.grid()
 
     def mass_fluxes(self) -> np.array:

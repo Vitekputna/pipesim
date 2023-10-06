@@ -39,16 +39,6 @@ class topology:
         self.add_node_from_component(component)
 
     def add_node_from_component(self, component : component) -> None:   
-        # num_nodes_toadd = max(0,component.inlet_node-len(self.nodes)+1)
-        # num_nodes_toadd = max(num_nodes_toadd,component.outlet_node-len(self.nodes)+1)
-
-        # for i in range(num_nodes_toadd):
-        #     self.nodes.append(node())
-
-        # if component.inlet_node not in self.nodes:
-        
-        #     self.nodes.append()
-
         component_ID = len(self.components)-1
 
         if component.inlet_node not in self.nodes:
@@ -69,9 +59,6 @@ class topology:
 
         self.N_nodes = len(self.nodes)
 
-        # self.nodes[component.inlet_node].outlet_components.append(component_ID)
-        # self.nodes[component.outlet_node].inlet_components.append(component_ID)
-
     def get_component(self, component_id : int) -> component:
         return self.components[component_id]
 
@@ -83,7 +70,3 @@ class topology:
         for index in self.nodes:
             print(index)
             print(self.nodes[index].inlet_components,self.nodes[index].outlet_components)
-
-        # print("Nodes:")
-        # for node in self.nodes:
-        #     print(node.inlet_components, node.outlet_components)
