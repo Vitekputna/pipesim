@@ -17,7 +17,6 @@ class pipesim:
 
         self.internal_node_offset = 1000
         self.internal_nodes = []
-        # self.internal_components = []
 
     def add_pipe(self, inlet_node : int, outlet_node : int, diameter : float, length : float, N_divisions = 10) -> None:
 
@@ -47,8 +46,13 @@ class pipesim:
 
         self.variables.create_hash_table(self.topology)
        
-    def add_area_change(self) -> None:
-        pass
+    def add_area_change(self, inlet_node:int, outlet_node:int, inlet_diameter:float, outlet_diameter:float) -> None:
+        comp = area_change(inlet_node,outlet_node)
+        comp.set_diameters(inlet_diameter,outlet_diameter)
+        comp.length = 0.01
+        self.add_component(comp)
+
+        self.variables.create_hash_table(self.topology)
 
     def add_local_loss(self, inlet_node :int, outlet_node : int, diameter : float, length : float, resistance_coefficient : float) -> None:
         comp = general(inlet_node,outlet_node)
@@ -56,6 +60,16 @@ class pipesim:
         comp.length = length
         comp.resistance_coeff = resistance_coefficient
         self.add_component(comp)
+
+        self.variables.create_hash_table(self.topology)
+
+    def add_orifice(self, inlet_node :int, outlet_node : int, diameter : float, length : float) -> None:
+        comp = orifice(inlet_node,outlet_node)
+        comp.set_diameter(diameter)
+        comp.length = length
+        self.add_component(comp)
+
+        self.variables.create_hash_table(self.topology)
 
     def set_solver(self, solver : solver) -> None:
         self.solver = solver()
@@ -217,18 +231,21 @@ class pipesim:
         plt.grid()
 
     def mass_fluxes(self) -> np.array:
-        size = len(self.variables.component_values)
-        fluxes = np.zeros(size)
 
-        for i in range(size):
-            area = self.topology.components[i].area
-            pressure = (self.variables.node_value(self.topology.components[i].inlet_node) + self.variables.node_value(self.topology.components[i].outlet_node))/2
-            density = self.properties.density(self.properties.temperature,pressure)
-            velocity = self.variables.component_values[i]
+        return self.solver.solve_mass_flux(self.properties,self.variables,self.topology,self.boundary_conditions)
 
-            fluxes[i] = area*density*velocity
+        # size = len(self.variables.component_values)
+        # fluxes = np.zeros(size)
 
-        return fluxes
+        # for i in range(size):
+        #     area = self.topology.components[i].area
+        #     pressure = (self.variables.node_value(self.topology.components[i].inlet_node) + self.variables.node_value(self.topology.components[i].outlet_node))/2
+        #     density = self.properties.density(self.properties.temperature,pressure)
+        #     velocity = self.variables.component_values[i]
+
+        #     fluxes[i] = area*density*velocity
+
+        # return fluxes
 
         
         

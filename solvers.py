@@ -119,6 +119,29 @@ class solver:
             variables.component_values[i][self.velocity_idx] = velocity
 
             i += 1
+
+    def solve_mass_flux(self, properties : properties, variables : variables, topology : topology, boundary_condition : list) -> None:
+        i = 0
+
+        mass_flux = []
+
+        for component in topology.components:
+
+            inlet_node = component.inlet_node
+            outlet_node = component.outlet_node
+
+            outlet_pressure = variables.node_value(outlet_node)[self.pressure_idx]
+            inlet_pressure = variables.node_value(inlet_node)[self.pressure_idx]
+
+            outlet_density = properties.density(properties.temperature,outlet_pressure)
+            inlet_density = properties.density(properties.temperature,inlet_pressure)
+
+            C = topology.components[i].get_coeff(variables.node_value(inlet_node),variables.node_value(outlet_node),variables.component_values[i],properties)
+
+            mass_flux.append(-C*(outlet_pressure-inlet_pressure))
+            i+=1
+        
+        return mass_flux
  
 class pressure_correction_solver(solver):
 

@@ -1,6 +1,7 @@
 from topology import component
 from properties import properties
 from friction_factor import *
+from loss_models import *
 import numpy as np
 
 class laminar_pipe(component):
@@ -139,9 +140,8 @@ class pipe(general):
             return Churchill(Re,self.roughness,self.diameter())
         
     def get_resistance_coeff(self, Re : float) -> float:
-        return self.get_lambda(Re)*self.length/self.diameter()
+        return self.get_lambda(abs(Re))*self.length/self.diameter()
         
-
 class area_change(general):
 
     def __init__(self, inlet_node: int, outlet_node: int) -> None:
@@ -154,24 +154,48 @@ class area_change(general):
         self.outlet_area = 1
         self.inlet_height = 0
         self.outlet_height = 0
-
-        #source https://core.ac.uk/download/pdf/148364855.pdf table 2.2
-        self.area_ratio = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
-        self.resistance_values = [0.50,0.45,0.42,0.39,0.36,0.33,0.28,0.22,0.15,0.06,0.00]
-
-    def interpolate_value(self, value) -> float:
         
-        # area_ratio = self.inlet_area/self.outlet_area
-        for i in range(len(self.area_ratio)-1):
-            if self.area_ratio[i] > value and self.area_ratio[i+1] < value:
+        self.orientation = 1 # 1 for inlet smaller than outlet
 
-        
+    def set_diameter(self, diameter: float) -> None:
+        print("Method not supported for this component, use set_diameters()")
 
-    def compute_contraction_loss(self) -> float:
-        return 
+    def set_diameters(self, inlet_diameter: float, outlet_diameter : float) -> None:
+        self.inlet_area = np.pi*(inlet_diameter**2)/4
+        self.outlet_area = np.pi*(outlet_diameter**2)/4
 
-    def get_resistance_coeff(self, Re: float) -> float:
-        return self.compute_contraction_loss()
+        if self.inlet_area > self.outlet_area:
+            self.orientation = -1
 
-    
-    
+    def compute_contraction_loss(self, Re : float) -> float:
+        if Re*self.orientation > 0:
+            return sudden_expansion(self.inlet_area,self.outlet_area)
+        else:
+            return sudden_contraction(self.inlet_area,self.outlet_area)
+
+    def get_resistance_coeff(self, Re : float) -> float:
+        return self.compute_contraction_loss(Re)
+
+class orifice(general):
+    def __init__(self, inlet_node: int, outlet_node: int) -> None:
+        super().__init__(inlet_node, outlet_node)
+        self.type = "orifice"
+        self.length = 1
+        self.area = 1
+
+    def get_discharge_coeff(self) -> float:
+        return 0.827-0.0085*self.length/self.diameter()
+
+    def get_coeff(self, inlet_node_values: list, outlet_node_values: list, component_values: list, properties: properties) -> float:
+        inlet_pressure = inlet_node_values[0]
+        outlet_pressure = outlet_node_values[0]
+
+        inlet_density = properties.density(properties.temperature,inlet_pressure)
+        outlet_density = properties.density(properties.temperature,outlet_pressure)
+
+        density = (inlet_density+outlet_density)/2
+        area = (self.inlet_area+self.outlet_area)/2
+
+        discharge_coeff = self.get_discharge_coeff()
+
+        return discharge_coeff*area*np.sqrt((2*density)/(abs(outlet_pressure-inlet_pressure)))
