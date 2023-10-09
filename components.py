@@ -2,6 +2,7 @@ from topology import component
 from properties import properties
 from friction_factor import *
 from loss_models import *
+from discharge_models import discharge_model
 import numpy as np
 
 class laminar_pipe(component):
@@ -183,8 +184,13 @@ class orifice(general):
         self.length = 1
         self.area = 1
 
-    def get_discharge_coeff(self) -> float:
-        return 0.827-0.0085*self.length/self.diameter()
+        self.model = discharge_model()
+
+    def set_discharge_model(self,model : discharge_model) -> None:
+        self.model = model
+
+    def get_discharge_coeff(self, Re : float) -> float:
+        return self.model.discharge_coeff(Re)
 
     def get_coeff(self, inlet_node_values: list, outlet_node_values: list, component_values: list, properties: properties) -> float:
         inlet_pressure = inlet_node_values[0]
@@ -196,6 +202,11 @@ class orifice(general):
         density = (inlet_density+outlet_density)/2
         area = (self.inlet_area+self.outlet_area)/2
 
-        discharge_coeff = self.get_discharge_coeff()
+        viscosity = properties.viscosity(properties.temperature,(inlet_pressure+outlet_pressure)/2)
+        velocity = component_values[0]
+
+        Re = self.diameter()*velocity/viscosity
+
+        discharge_coeff = self.get_discharge_coeff(Re)
 
         return discharge_coeff*area*np.sqrt((2*density)/(abs(outlet_pressure-inlet_pressure)))

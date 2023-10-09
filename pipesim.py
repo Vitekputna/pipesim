@@ -5,6 +5,7 @@ from solvers import *
 from conditions import condition
 from variables import variables
 from properties import properties
+from discharge_models import discharge_model, linear_model
 import matplotlib.pyplot as plt 
 
 class pipesim:
@@ -63,10 +64,11 @@ class pipesim:
 
         self.variables.create_hash_table(self.topology)
 
-    def add_orifice(self, inlet_node :int, outlet_node : int, diameter : float, length : float) -> None:
+    def add_orifice(self, inlet_node :int, outlet_node : int, diameter : float, length : float, discharge_model : discharge_model = linear_model) -> None:
         comp = orifice(inlet_node,outlet_node)
         comp.set_diameter(diameter)
         comp.length = length
+        comp.set_discharge_model(discharge_model(length,diameter))
         self.add_component(comp)
 
         self.variables.create_hash_table(self.topology)

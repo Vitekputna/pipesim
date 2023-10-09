@@ -70,7 +70,7 @@ class CRSprop_isothermal(properties):
         self.temperature = value
     
     def density(self, temperature, pressure) -> float:
-        return self.props.density(self.specie,pressure/1e6,temperature) #debilní převod na MPa (protože CRSprop psal debil (já))
+        return self.props.density(self.specie,pressure/1e6,temperature)
     
     def viscosity(self, temperature, pressure) -> float:
-        return self.props.dynamic_viscosity(self.specie,pressure/1e6,temperature) #debilní převod na MPa (protože CRSprop psal debil (já))
+        return self.props.dynamic_viscosity(self.specie,pressure/1e6,temperature)
