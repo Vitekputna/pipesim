@@ -12,8 +12,9 @@ class solver:
          self.pressure_idx = 0
          self.velocity_idx = 0
 
-    def solve(self, variables : variables, topology : topology, boundary_condition : list) -> None:
-        variables.init_values(1e5,2e5,1,2)
+    def solve(self, variables : variables, topology : topology, boundary_condition : list, initialize = True) -> None:
+        if initialize: 
+            variables.init_values(1e5,2e5,1,2)
     
     def get_nodes(self, topology : topology, boundary_condition : list) -> list:
         nodes_to_solve = []
@@ -49,7 +50,6 @@ class solver:
 
             if cond.type == "component":
                 variables.node_value(cond.index)[cond.index_in_vector] = cond.value
-
 
     def compute_residual(self, properties : properties, variables : variables, topology : topology, boundary_condition : list) -> float:
         
@@ -93,6 +93,20 @@ class solver:
 
         return np.abs(total_mass_flow_residual)
     
+    def solve_velocity(self, properties : properties, variables : variables, topology : topology, boundary_condition : list) -> None:
+        pass
+
+    def solve_mass_flux(self, properties : properties, variables : variables, topology : topology, boundary_condition : list) -> list:
+        mass_flux = []
+        return mass_flux
+ 
+class pressure_correction_solver(solver):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.max_iterations = 500
+        self.relaxation_factor = 0.9
+
     def solve_velocity(self, properties : properties, variables : variables, topology : topology, boundary_condition : list) -> None:
 
         i = 0
@@ -142,16 +156,9 @@ class solver:
             i+=1
         
         return mass_flux
- 
-class pressure_correction_solver(solver):
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.max_iterations = 500
-        self.relaxation_factor = 0.9
-
-    def solve(self, properties : properties, variables : variables, topology : topology, boundary_condition : list) -> None:
-        super().solve(variables,topology,boundary_condition)
+    def solve(self, properties : properties, variables : variables, topology : topology, boundary_condition : list, initialize = True) -> None:
+        super().solve(variables,topology,boundary_condition,initialize)
         print("Pressure correction solver")
         
         self.apply_boundary_conditions(variables,boundary_condition)

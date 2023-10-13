@@ -4,38 +4,6 @@ from friction_factor import *
 from loss_models import *
 from discharge_models import discharge_model
 import numpy as np
-
-class laminar_pipe(component):
-    def __init__(self, inlet_node: int, outlet_node: int) -> None:
-        super().__init__(inlet_node,outlet_node)
-        self.type = "laminar_pipe"
-        self.length = 1
-        self.area = 1
-        self.inlet_area = 1
-        self.outlet_area = 1
-
-    def set_diameter(self, diameter : float) -> None:
-        self.area = np.pi*(diameter**2)/4
-        self.inlet_area = self.area
-        self.outlet_area = self.area
-
-    def diameter(self) -> float:
-        return np.sqrt(4*self.area/np.pi)
-
-    # def get_coeff(self,inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float, viscosity : float) -> float:
-    def get_coeff(self, inlet_node_values : list, outlet_node_values : list, component_values : list, properties : properties) -> float:
-
-        inlet_pressure = inlet_node_values[0]
-        outlet_pressure = outlet_node_values[0]
-
-        inlet_density = properties.density(properties.temperature,inlet_pressure)
-        outlet_density = properties.density(properties.temperature,outlet_pressure)
-
-        viscosity = properties.viscosity(properties.temperature,(inlet_pressure+outlet_pressure)/2)
-
-        diameter = np.sqrt(4*self.area/np.pi)
-        density = (inlet_density+outlet_density)/2
-        return (np.pi*density*diameter**4)/(128*viscosity*self.length)
     
 class general(component):
     def __init__(self, inlet_node: int, outlet_node: int) -> None:
@@ -210,3 +178,23 @@ class orifice(general):
         discharge_coeff = self.get_discharge_coeff(Re)
 
         return discharge_coeff*area*np.sqrt((2*density)/(abs(outlet_pressure-inlet_pressure)))
+    
+class Kv_valve(general):
+    def __init__(self, inlet_node: int, outlet_node: int) -> None:
+        super().__init__(inlet_node, outlet_node)
+        self.type = "valve"
+        self.length = 1
+        
+        self.Kv = 1e-8 #in SI units m^3/sPa
+
+    def get_coeff(self, inlet_node_values: list, outlet_node_values: list, component_values: list, properties: properties) -> float:
+
+        inlet_pressure = inlet_node_values[0]
+        outlet_pressure = outlet_node_values[0]
+
+        inlet_density = properties.density(properties.temperature,inlet_pressure)
+        outlet_density = properties.density(properties.temperature,outlet_pressure)
+
+        density = (inlet_density+outlet_density)/2
+
+        return  density*self.Kv

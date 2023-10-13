@@ -73,6 +73,14 @@ class pipesim:
 
         self.variables.create_hash_table(self.topology)
 
+    def add_valve(self, inlet_node :int, outlet_node : int, diameter: float, length : float, Kv : float) -> None:
+
+        comp = Kv_valve(inlet_node,outlet_node)
+        comp.Kv = Kv
+        comp.length = length
+        comp.set_diameter(diameter)
+        self.add_component(comp)
+
     def set_solver(self, solver : solver) -> None:
         self.solver = solver()
 
@@ -94,8 +102,8 @@ class pipesim:
             print("Error node in boundary condition is not defined")
             exit()
 
-    def solve(self) -> None:
-        self.solver.solve(self.properties,self.variables,self.topology,self.boundary_conditions)
+    def solve(self, initialize = True) -> None:
+        self.solver.solve(self.properties,self.variables,self.topology,self.boundary_conditions,initialize)
 
     def print_variables(self) -> None:
         print(self.variables.node_values)
@@ -234,21 +242,4 @@ class pipesim:
 
     def mass_fluxes(self) -> np.array:
 
-        return self.solver.solve_mass_flux(self.properties,self.variables,self.topology,self.boundary_conditions)
-
-        # size = len(self.variables.component_values)
-        # fluxes = np.zeros(size)
-
-        # for i in range(size):
-        #     area = self.topology.components[i].area
-        #     pressure = (self.variables.node_value(self.topology.components[i].inlet_node) + self.variables.node_value(self.topology.components[i].outlet_node))/2
-        #     density = self.properties.density(self.properties.temperature,pressure)
-        #     velocity = self.variables.component_values[i]
-
-        #     fluxes[i] = area*density*velocity
-
-        # return fluxes
-
-        
-        
-        
+        return self.solver.solve_mass_flux(self.properties,self.variables,self.topology,self.boundary_conditions)        
