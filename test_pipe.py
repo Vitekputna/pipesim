@@ -11,6 +11,14 @@ sim.add_pipe(2,3,0.02,0.3,N_divisions=30)
 sim.add_area_change(3,4,0.02,0.01)
 sim.add_pipe(4,5,0.01,1,N_divisions=50)
 
+# sim.add_pipe(5,6,0.02,2,N_divisions=50)
+
+# #Flood Fish
+# sim.add_area_change(0,1,0.1063,0.022)
+# sim.add_pipe(1,2,0.022,0.2,N_divisions=10)
+# sim.add_area_change(2,3,0.022,0.0158)
+# sim.add_pipe(3,4,0.0158,1.5)
+
 
 sim.set_solver(pressure_correction_solver)
 sim.solver.max_iterations = 100

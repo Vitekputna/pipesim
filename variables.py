@@ -24,6 +24,8 @@ class variables:
 
     def init_values(self, min_node_value : float, max_node_value : float, min_comp_value : float, max_comp_value : float) -> None:
 
+        print("Initializing values")
+
         for i in range(len(self.node_values)):
             num = random.uniform(min_node_value,max_node_value)
             self.node_values[i] = num

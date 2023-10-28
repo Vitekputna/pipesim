@@ -58,7 +58,7 @@ class general(component):
 
         eps = 1e-6 # Division by zero
 
-        Re = self.diameter()*velocity/viscosity
+        Re = density*self.diameter()*velocity/viscosity
 
         resistance_coeff = self.get_resistance_coeff(Re)
 
@@ -173,7 +173,7 @@ class orifice(general):
         viscosity = properties.viscosity(properties.temperature,(inlet_pressure+outlet_pressure)/2)
         velocity = component_values[0]
 
-        Re = self.diameter()*velocity/viscosity
+        Re = density*self.diameter()*velocity/viscosity
 
         discharge_coeff = self.get_discharge_coeff(Re)
 

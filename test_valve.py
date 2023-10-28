@@ -23,11 +23,23 @@ sim.add_boundary_condition(set_pressure(0,2e5))
 sim.add_boundary_condition(set_pressure(3,1e5))
 
 sim.solve()
- 
-sim.plot_velocity(length_scale=True)
-sim.plot_pressure(length_scale=True)
-sim.plot_density(length_scale=True)
-sim.plot_mass_flux(length_scale=True)
-sim.plot_residual()
+print(np.average(sim.mass_fluxes())) 
+# sim.plot_residual()
 
+sim.add_boundary_condition(set_pressure(0,3e5))
+sim.solve(initialize=False)
 print(np.average(sim.mass_fluxes()))
+
+sim.add_boundary_condition(set_pressure(0,4e5))
+sim.solve(initialize=False)
+print(np.average(sim.mass_fluxes()))
+
+sim.add_boundary_condition(set_pressure(0,5e5))
+sim.solve(initialize=False)
+print(np.average(sim.mass_fluxes()))
+
+# sim.plot_velocity(length_scale=True)
+# sim.plot_pressure(length_scale=True)
+# sim.plot_density(length_scale=True)
+# sim.plot_mass_flux(length_scale=True)
+# sim.plot_residual()
