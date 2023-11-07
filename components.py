@@ -94,8 +94,8 @@ class pipe(general):
         self.type = "pipe"
 
         self.critical_Re = 2300
-        self.smoothing_interval = 1000
-        self.roughness = 1e-3
+        self.smoothing_interval = 250
+        self.roughness = 2e-4
 
     def get_lambda(self, Re : float) -> float:
         # Laminar flow

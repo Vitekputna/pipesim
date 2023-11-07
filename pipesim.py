@@ -240,6 +240,34 @@ class pipesim:
             plt.plot(node_mass_flux)
         plt.grid()
 
+    def plot_reynolds(self, length_scale = False) -> None:
+        index = self.solver.velocity_idx
+        size = len(self.variables.component_values)
+
+        vector = np.zeros(size)
+        length = np.linspace(0,size,size)
+
+        for i in range(size):
+            comp = self.topology.components[i]
+            velocity = self.variables.component_values[i][index]
+
+            inlet_pressure = self.variables.node_value(comp.inlet_node)[self.solver.pressure_idx]
+            outlet_pressure = self.variables.node_value(comp.outlet_node)[self.solver.pressure_idx]
+
+            inlet_density = self.properties.density(self.properties.temperature,inlet_pressure)
+            outlet_density = self.properties.density(self.properties.temperature,outlet_pressure)
+
+            density = 0.5*(inlet_density+outlet_density)
+
+            Re = comp.diameter()*density*velocity/self.properties.viscosity(self.properties.temperature,inlet_pressure)
+
+            vector[i] = Re
+
+        plt.figure()
+        plt.title("Reynolds number")
+        plt.plot(length,vector)
+        plt.grid()
+
     def mass_fluxes(self) -> np.array:
 
         return self.solver.solve_mass_flux(self.properties,self.variables,self.topology,self.boundary_conditions)        
