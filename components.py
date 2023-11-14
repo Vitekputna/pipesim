@@ -62,15 +62,26 @@ class general(component):
 
         resistance_coeff = self.get_resistance_coeff(Re)
 
-        A1 = ((area/self.inlet_area)**2)*density**2
-        A2 = ((area/self.outlet_area)**2)*density**2
+        # A1 = ((area/self.inlet_area)**2)*density**2
+        # A2 = ((area/self.outlet_area)**2)*density**2
 
-        K1 = area*density/(np.abs(inlet_pressure-outlet_pressure + eps))
+        # K1 = area*density/(np.abs(inlet_pressure-outlet_pressure + eps))
 
-        K2 = np.abs((outlet_pressure-inlet_pressure + gravity*(self.outlet_height*outlet_density-self.inlet_height*inlet_density))/
-                    (A1/inlet_density - A2/outlet_density - resistance_coeff*A1/inlet_density))
+        # K2 = np.abs((outlet_pressure-inlet_pressure + gravity*(self.outlet_height*outlet_density-self.inlet_height*inlet_density))/
+        #             (A1/inlet_density - A2/outlet_density - resistance_coeff*A1/inlet_density))
 
-        return K1*np.sqrt(2*K2)
+        # return K1*np.sqrt(2*K2)
+
+        A1 = self.inlet_area
+        A2 = self.outlet_area
+
+        a1 = 1/(A1*inlet_density)**2
+        a2 = 1/(A2*outlet_density)**2
+
+        K1 = 1/(np.abs(outlet_pressure-inlet_pressure+eps))
+        K2 = 2*(outlet_pressure/outlet_density-inlet_pressure/inlet_density)/(a1*(1-resistance_coeff)-a2)
+
+        return K1*np.sqrt(np.abs(K2))
     
     def bernouli_residual(self, massflow : float, inlet_pressure : float, outlet_pressure : float, inlet_density : float, outlet_density : float) -> float:
 

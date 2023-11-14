@@ -14,6 +14,7 @@ class properties:
 class constant_properties(properties):
     def __init__(self) -> None:
         super().__init__()
+        print("Setting constant properties model")
         self.density_value = 0
         self.viscosity_value = 0
         self.temperature = 300
@@ -36,6 +37,7 @@ class constant_properties(properties):
 class compresible_isothermal(properties):
     def __init__(self) -> None:
         super().__init__()
+        print("Setting compressible isothermal model")
         self.compresibility = 1
         self.viscosity_value = 0
         self.temperature = 300
@@ -58,6 +60,7 @@ class compresible_isothermal(properties):
 class CRSprop_isothermal(properties):
     def __init__(self) -> None:
         super().__init__()
+        print("Setting CRSprop isothermal model")
         self.props = CRSprop()
         self.specie = ""
         self.temperature = 300

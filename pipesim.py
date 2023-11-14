@@ -19,6 +19,8 @@ class pipesim:
         self.internal_node_offset = 1000
         self.internal_nodes = []
 
+        print("### RUNNING PIPESIM ###")
+
     def add_pipe(self, inlet_node : int, outlet_node : int, diameter : float, length : float, N_divisions = 10) -> None:
 
         dl = length/N_divisions
@@ -109,6 +111,13 @@ class pipesim:
         print(self.variables.node_values)
         print(self.variables.component_values)
 
+    def generate_length(self):
+        size = len(self.variables.node_values)
+        length = np.zeros(size)
+
+        for comp in self.topology.components:
+            print(comp.length)
+
     def plot_residual(self) -> None:
 
         max_residual = np.max(self.solver.residual)
@@ -120,7 +129,7 @@ class pipesim:
         plt.grid()
         plt.show()
 
-    def plot_pressure(self, length_scale = False) -> None:
+    def plot_pressure(self, length_scale = False, plot_nodes = False, color = 'k') -> None:
         index = self.solver.pressure_idx
         size = len(self.variables.node_values)
 
@@ -137,15 +146,39 @@ class pipesim:
 
         plt.figure()
         plt.title("pressure")
-        plt.plot(length,vector)
-        plt.grid()
+        plt.plot(length,vector,color)
 
-    def plot_velocity(self, length_scale = False) -> None:
+        if plot_nodes:
+            idx = 0
+            for i in self.variables.node_hash_table.keys():
+
+                if i < self.internal_node_offset:
+                    val = self.variables.node_values[idx]
+
+                    if length_scale:
+                        plt.plot(length[idx],val[index],color + 'o')
+                    else:
+                        plt.plot(idx,val[index],color + 'o')
+
+                idx +=1
+
+        plt.grid('minor')
+        plt.ylabel("P[Pa]")
+        if length_scale:
+            plt.xlabel("l[m]")
+        else:
+            plt.xlabel("n[/]")
+
+    def plot_velocity(self, length_scale = False, plot_nodes = False, color = 'k') -> None:
         index = self.solver.velocity_idx
         size = len(self.variables.component_values)
 
-        vector = np.zeros(2*size)
-        length = np.zeros(2*size)
+        vector = np.zeros(size+1)
+        length = np.linspace(0,size,size+1)
+
+        if length_scale:
+            for i in range(1,len(length)):
+                length[i] = length[i-1] + self.topology.components[i-1].length
 
         for i in range(size):
             comp = self.topology.components[i]
@@ -166,26 +199,43 @@ class pipesim:
             inlet_velocity = velocity*area*density/(inlet_area*inlet_density)
             outlet_velocity = velocity*area*density/(outlet_area*outlet_density)
 
-            vector[2*i] = inlet_velocity
-            vector[2*i+1] = outlet_velocity
-
-            if i == 0:
-                length[2*i] = 0
-            else:
-                length[2*i] = length[2*i-1]
-            length[2*i+1] = length[2*i] + comp.length
+            vector[i] = inlet_velocity
+            vector[i+1] = outlet_velocity
 
         plt.figure()
         plt.title("velocity")
-        plt.plot(length,vector)
-        plt.grid()
+        plt.plot(length,vector,color)
 
-    def plot_density(self, length_scale = False) -> None:
-        index = self.solver.velocity_idx
+        if plot_nodes:
+            idx = 0
+            for i in self.variables.node_hash_table.keys():
+
+                if i < self.internal_node_offset:
+                    val = vector[idx]
+
+                    if length_scale:
+                        plt.plot(length[idx],val,color + 'o')
+                    else:
+                        plt.plot(idx,val,color + 'o')
+
+                idx +=1
+
+        plt.grid()
+        plt.ylabel("c[m/s]")
+        if length_scale:
+            plt.xlabel("l[m]")
+        else:
+            plt.xlabel("n[/]")
+
+    def plot_density(self, length_scale = False, plot_nodes = False, color = 'k') -> None:
         size = len(self.variables.component_values)
 
-        vector = np.zeros(2*size)
-        length = np.zeros(2*size)
+        vector = np.zeros(size+1)
+        length = np.linspace(0,size,size+1)
+
+        if length_scale:
+            for i in range(1,len(length)):
+                length[i] = length[i-1] + self.topology.components[i-1].length
 
         for i in range(size):
             comp = self.topology.components[i]
@@ -196,19 +246,33 @@ class pipesim:
             inlet_density = self.properties.density(self.properties.temperature,inlet_pressure)
             outlet_density = self.properties.density(self.properties.temperature,outlet_pressure)
 
-            vector[2*i] = inlet_density
-            vector[2*i+1] = outlet_density
-
-            if i == 0:
-                length[2*i] = 0
-            else:
-                length[2*i] = length[2*i-1]
-            length[2*i+1] = length[2*i] + comp.length
+            vector[i] = inlet_density
+            vector[i+1] = outlet_density
 
         plt.figure()
-        plt.title("density")
-        plt.plot(length,vector)
+        plt.title("Density")
+        plt.plot(length,vector,color)
+
+        if plot_nodes:
+            idx = 0
+            for i in self.variables.node_hash_table.keys():
+
+                if i < self.internal_node_offset:
+                    val = vector[idx]
+
+                    if length_scale:
+                        plt.plot(length[idx],val,color + 'o')
+                    else:
+                        plt.plot(idx,val,color + 'o')
+
+                idx +=1
+
         plt.grid()
+        plt.ylabel("rho[kgm^-3]")
+        if length_scale:
+            plt.xlabel("l[m]")
+        else:
+            plt.xlabel("n[/]")
 
     def plot_mass_flux(self, length_scale = False) -> None:
 
@@ -233,6 +297,11 @@ class pipesim:
 
         plt.figure()
         plt.title("Hmotnostní tok")
+        plt.ylabel("flux[kg/s]")
+        if length_scale:
+            plt.xlabel("l[m]")
+        else:
+            plt.xlabel("n[/]")
 
         if length_scale:
             plt.plot(length,node_mass_flux)
