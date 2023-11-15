@@ -22,17 +22,26 @@ class variables:
         self.node_values = np.zeros((N_nodes,self.values_per_node))
         self.component_values = np.zeros((N_components,self.values_per_component))
 
-    def init_values(self, min_node_value : float, max_node_value : float, min_comp_value : float, max_comp_value : float) -> None:
+    def init_values(self, min_node_value : float, max_node_value : float, min_comp_value : float, max_comp_value : float,
+                    node_idxs_to_init : list = [], comp_idxs_to_init : list = []) -> None:
 
         print("Initializing values")
 
+        if len(node_idxs_to_init) == 0:
+            node_idxs_to_init = range(self.values_per_node)
+
+        if len(comp_idxs_to_init) == 0:
+            comp_idxs_to_init = range(self.values_per_component)
+
         for i in range(len(self.node_values)):
             num = random.uniform(min_node_value,max_node_value)
-            self.node_values[i] = num
+            for j in node_idxs_to_init:
+                self.node_values[i][j] = num
             
         for i in range(len(self.component_values)):
             num = random.uniform(min_comp_value,max_comp_value)
-            self.component_values[i] = num
+            for j in comp_idxs_to_init:
+                self.component_values[i][j] = num
 
     def node_value(self, node_idx : int):
         return self.node_values[self.node_hash_table[node_idx]]

@@ -1,4 +1,5 @@
 from CRSprop import CRSprop
+from variables import variables
 
 class properties:
     def __init__(self) -> None:
@@ -77,3 +78,90 @@ class CRSprop_isothermal(properties):
     
     def viscosity(self, temperature, pressure) -> float:
         return self.props.dynamic_viscosity(self.specie,pressure/1e6,temperature)
+    
+    def enthalpy(self,temperature,pressure) -> float:
+        return self.props.enthalpy(self.specie,pressure/1e6,temperature)
+    
+    def entropy(self,temperature,pressure) -> float:
+        return self.props.entropy(self.specie,pressure/1e6,temperature)
+    
+    def liquid_density(self,temperature) -> float:
+        return self.props.liquid_density(self.specie,temperature)
+    
+    def vapor_density(self,temperature) -> float:
+        return self.props.vapor_density(self.specie,temperature)
+    
+    def liquid_enthalpy(self,temperature) -> float:
+        return self.props.liquid_enthalpy(self.specie,temperature)
+    
+    def vapor_enthalpy(self,temperature) -> float:
+        return self.props.vapor_enthalpy(self.specie,temperature)
+    
+    def liquid_entropy(self,temperature) -> float:
+        return self.props.liquid_entropy(self.specie,temperature)
+    
+    def vapor_entropy(self,temperature) -> float:
+        return self.props.vapor_entropy(self.specie,temperature)
+    
+    def vapor_pressure(self,temperature) -> float:
+        return self.props.saturated_pressure(self.specie,temperature)
+    
+    def vapor_temperature(self,pressure) -> float:
+        return self.props.saturated_temperature(self.specie,pressure)
+    
+class CRSprop_equilibrium(properties):
+    def __init__(self) -> None:
+        super().__init__()
+        print("Setting CRSprop isothermal model")
+        self.props = CRSprop()
+        self.specie = ""
+        self.pressure_idx = 0
+        self.temperature_idx = 1
+
+    def set_specie(self, value : str) -> None:
+        self.specie = value
+        self.props.add_specie(value)
+    
+    def update_temperature(self,variables : variables) -> None:
+
+        for node_val in variables.node_values:
+            pressure = node_val[self.pressure_idx]
+            temperature = node_val[self.temperature_idx]
+
+            temperature = self.vapor_temperature(pressure)
+
+    def density(self, temperature, pressure) -> float:
+        return self.props.density(self.specie,pressure/1e6,temperature)
+    
+    def viscosity(self, temperature, pressure) -> float:
+        return self.props.dynamic_viscosity(self.specie,pressure/1e6,temperature)
+    
+    def enthalpy(self,temperature,pressure) -> float:
+        return self.props.enthalpy(self.specie,pressure/1e6,temperature)
+    
+    def entropy(self,temperature,pressure) -> float:
+        return self.props.entropy(self.specie,pressure/1e6,temperature)
+    
+    def liquid_density(self,temperature) -> float:
+        return self.props.liquid_density(self.specie,temperature)
+    
+    def vapor_density(self,temperature) -> float:
+        return self.props.vapor_density(self.specie,temperature)
+    
+    def liquid_enthalpy(self,temperature) -> float:
+        return self.props.liquid_enthalpy(self.specie,temperature)
+    
+    def vapor_enthalpy(self,temperature) -> float:
+        return self.props.vapor_enthalpy(self.specie,temperature)
+    
+    def liquid_entropy(self,temperature) -> float:
+        return self.props.liquid_entropy(self.specie,temperature)
+    
+    def vapor_entropy(self,temperature) -> float:
+        return self.props.vapor_entropy(self.specie,temperature)
+    
+    def vapor_pressure(self,temperature) -> float:
+        return self.props.saturated_pressure(self.specie,temperature)
+    
+    def vapor_temperature(self,pressure) -> float:
+        return self.props.saturated_temperature(self.specie,pressure)

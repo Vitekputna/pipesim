@@ -18,7 +18,7 @@ class solver:
 
     def solve(self, variables : variables, topology : topology, boundary_condition : list, initialize = True) -> None:
         if initialize: 
-            variables.init_values(1e5,2e5,1,2)
+            variables.init_values(1e5,2e5,1,2,comp_idxs_to_init=[self.velocity_idx],node_idxs_to_init=[self.pressure_idx])
     
     def get_nodes(self, topology : topology, boundary_condition : list) -> list:
         nodes_to_solve = []

@@ -14,8 +14,6 @@ class mass_flow_model:
 
     def mass_flux(self, inlet_node_values: list, outlet_node_values: list, component_values: list, properties: properties) -> float:
         return 0.0
-
-
     
 class incompressible_model(mass_flow_model):
     def __init__(self, length: float, diameter: float, discharge_model: discharge_model) -> None:
@@ -41,7 +39,25 @@ class incompressible_model(mass_flow_model):
 class HEM_model(mass_flow_model):
     def __init__(self) -> None:
         super().__init__()
+        self.process = "isoentropic"
+
+    def mass_flux_isoentropic(self, inlet_node_values: list, outlet_node_values: list, component_values: list, properties: properties) -> float:
+        return 0.0
     
+    def mass_flux_adiabatic(self, inlet_node_values: list, outlet_node_values: list, component_values: list, properties: properties) -> float:
+        return 0.0
+
+    def mass_flux(self, inlet_node_values: list, outlet_node_values: list, component_values: list, properties: properties) -> float:
+        
+        if self.process == "isoentropic":
+            return self.mass_flux_isoentropic(self,inlet_node_values,outlet_node_values,component_values,properties)
+        elif self.process == "adiabatic":
+            return self.mass_flux_adiabatic(self,inlet_node_values,outlet_node_values,component_values,properties)
+        else:
+            print("Unknown orifice model")
+            return 0.0
+    
+
 class NHNE(mass_flow_model):
     def __init__(self) -> None:
         super().__init__()

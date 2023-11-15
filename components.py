@@ -188,7 +188,7 @@ class orifice(general):
 
         discharge_coeff = self.get_discharge_coeff(Re)
 
-        return discharge_coeff*area*np.sqrt((2*density)/(abs(outlet_pressure-inlet_pressure)))
+        return discharge_coeff*area*np.sqrt((2*inlet_density)/(abs(outlet_pressure-inlet_pressure)))
     
 class Kv_valve(general):
     def __init__(self, inlet_node: int, outlet_node: int) -> None:

@@ -92,8 +92,9 @@ class pipesim:
     def add_component(self, component : component) -> None:
         self.topology.add_component(component)
 
-        self.variables.values_per_component = 1
-        self.variables.values_per_node = 1
+    def init_variables(self, values_per_component : int, values_per_node : int) -> None:
+        self.variables.values_per_component = values_per_component
+        self.variables.values_per_node = values_per_node
         self.variables.init_variables(self.topology.N_nodes,self.topology.N_components)
 
     def add_boundary_condition(self,boundary_condition : condition) -> None:
