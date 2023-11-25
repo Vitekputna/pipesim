@@ -8,6 +8,9 @@ class variables:
         self.values_per_node = 0
         self.values_per_component = 0
 
+        # self.node_values = np.array(1)
+        # self.component_values = np.array(1)
+
         self.node_hash_table = {}
 
     def create_hash_table(self,topology : topology) -> None:
@@ -42,6 +45,14 @@ class variables:
             num = random.uniform(min_comp_value,max_comp_value)
             for j in comp_idxs_to_init:
                 self.component_values[i][j] = num
+
+    def init_node_value(self, index : int, value):
+        
+        for i in range(len(self.node_values)):
+            self.node_values[i][index] = value
+
+    def init_component_value():
+        pass
 
     def node_value(self, node_idx : int):
         return self.node_values[self.node_hash_table[node_idx]]

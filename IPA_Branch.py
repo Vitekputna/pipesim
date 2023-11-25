@@ -1,3 +1,4 @@
+#NOT WORKING
 from pipesim import *
 from conditions import set_pressure
 from discharge_models import *
@@ -85,7 +86,7 @@ sim.add_boundary_condition(set_pressure(33,2.5e6))
 
 sim.solve()
  
-sim.plot_velocity(length_scale=True)
+sim.plot_velocity(length_scale=True,plot_nodes=True,color="r")
 sim.plot_pressure(length_scale=True)
 sim.plot_density(length_scale=True)
 sim.plot_mass_flux(length_scale=True)

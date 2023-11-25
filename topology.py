@@ -1,4 +1,4 @@
-from properties import properties
+# from properties import properties
 
 class node:
     def __init__(self) -> None:
@@ -23,7 +23,7 @@ class component:
         self.inlet_node = inlet_node
         self.outlet_node = outlet_node
 
-    def get_coeff(self, inlet_node_values : list, outlet_node_values : list, component_values : list, properties : properties) -> float:
+    def get_coeff(self, inlet_node_values : list, outlet_node_values : list, component_values : list, properties) -> float:
         return 0
 
 class topology:

@@ -13,14 +13,16 @@ sim.add_pipe(4,5,0.01,1,N_divisions=10)
 sim.add_orifice(5,6,1e-3,1e-2)
 
 sim.init_variables(1,2)
+sim.variables.init_values(1e5,2e5,1,2,comp_idxs_to_init=[0],node_idxs_to_init=[0])
+sim.variables.init_node_value(1,300)
 
 sim.set_solver(pressure_correction_solver)
-sim.solver.max_iterations = 500
+sim.solver.max_iterations = 250
 sim.solver.relaxation_factor = 0.98
 sim.solver.pressure_idx = 0
 
 sim.set_properties_model(CRSprop_isothermal)
-sim.properties.set_specie("N2O")
+sim.properties.set_specie("C3H8O")
 sim.properties.temperature = 300
 
 sim.add_boundary_condition(set_pressure(0,8e6))

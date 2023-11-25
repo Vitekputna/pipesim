@@ -6,6 +6,9 @@ class properties:
         self.gravity = 9.81
         pass
 
+    def update_temperature(self,variables : variables) -> None:
+        pass
+
     def density(self, temperature, pressure) -> float:
         return 0.
     
@@ -128,7 +131,8 @@ class CRSprop_equilibrium(properties):
             pressure = node_val[self.pressure_idx]
             temperature = node_val[self.temperature_idx]
 
-            temperature = self.vapor_temperature(pressure)
+            if pressure <= self.vapor_pressure(temperature):
+                node_val[self.temperature_idx] = self.vapor_temperature(pressure)
 
     def density(self, temperature, pressure) -> float:
         return self.props.density(self.specie,pressure/1e6,temperature)

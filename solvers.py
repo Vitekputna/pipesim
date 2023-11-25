@@ -15,10 +15,12 @@ class solver:
     
          self.pressure_idx = 0
          self.velocity_idx = 0
+         self.temperature_idx = 1
 
     def solve(self, variables : variables, topology : topology, boundary_condition : list, initialize = True) -> None:
-        if initialize: 
-            variables.init_values(1e5,2e5,1,2,comp_idxs_to_init=[self.velocity_idx],node_idxs_to_init=[self.pressure_idx])
+        # if initialize: 
+        #     variables.init_values(1e5,2e5,1,2,comp_idxs_to_init=[self.velocity_idx],node_idxs_to_init=[self.pressure_idx])
+        pass
     
     def get_nodes(self, topology : topology, boundary_condition : list) -> list:
         nodes_to_solve = []
@@ -186,8 +188,11 @@ class pressure_correction_solver(solver):
             outlet_pressure = variables.node_value(outlet_node)[self.pressure_idx]
             inlet_pressure = variables.node_value(inlet_node)[self.pressure_idx]
 
-            outlet_density = properties.density(properties.temperature,outlet_pressure)
-            inlet_density = properties.density(properties.temperature,inlet_pressure)
+            inlet_temperature = variables.node_value(outlet_node)[self.temperature_idx]
+            outlet_temperature = variables.node_value(outlet_node)[self.temperature_idx]
+
+            inlet_density = properties.density(inlet_temperature,inlet_pressure)
+            outlet_density = properties.density(outlet_temperature,outlet_pressure)
 
             C = topology.components[i].get_coeff(variables.node_value(inlet_node),variables.node_value(outlet_node),variables.component_values[i],properties)
 
@@ -214,9 +219,6 @@ class pressure_correction_solver(solver):
 
             outlet_pressure = variables.node_value(outlet_node)[self.pressure_idx]
             inlet_pressure = variables.node_value(inlet_node)[self.pressure_idx]
-
-            outlet_density = properties.density(properties.temperature,outlet_pressure)
-            inlet_density = properties.density(properties.temperature,inlet_pressure)
 
             C = topology.components[i].get_coeff(variables.node_value(inlet_node),variables.node_value(outlet_node),variables.component_values[i],properties)
 
@@ -301,6 +303,8 @@ class pressure_correction_solver(solver):
 
             for i in range(size):
                 variables.node_value(nodes_to_solve[i])[self.pressure_idx] += self.relaxation_factor*result[i]
+
+            properties.update_temperature(variables)
 
             self.residual.append(self.compute_residual(properties,variables,topology,boundary_condition))
 

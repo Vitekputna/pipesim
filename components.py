@@ -47,13 +47,15 @@ class general(component):
         inlet_pressure = inlet_node_values[0]
         outlet_pressure = outlet_node_values[0]
 
-        inlet_density = properties.density(properties.temperature,inlet_pressure)
-        outlet_density = properties.density(properties.temperature,outlet_pressure)
+        inlet_temperature = inlet_node_values[1]
+        outlet_temperature = outlet_node_values[1]
 
-        viscosity = properties.viscosity(properties.temperature,(inlet_pressure+outlet_pressure)/2)
+        inlet_density = properties.density(inlet_temperature,inlet_pressure)
+        outlet_density = properties.density(outlet_temperature,outlet_pressure)
+
+        viscosity = properties.viscosity((inlet_temperature+outlet_temperature)/2,(inlet_pressure+outlet_pressure)/2)
 
         density = (inlet_density+outlet_density)/2
-        area = (self.inlet_area+self.outlet_area)/2
         velocity = component_values[0]
 
         eps = 1e-6 # Division by zero
@@ -61,16 +63,6 @@ class general(component):
         Re = density*self.diameter()*velocity/viscosity
 
         resistance_coeff = self.get_resistance_coeff(Re)
-
-        # A1 = ((area/self.inlet_area)**2)*density**2
-        # A2 = ((area/self.outlet_area)**2)*density**2
-
-        # K1 = area*density/(np.abs(inlet_pressure-outlet_pressure + eps))
-
-        # K2 = np.abs((outlet_pressure-inlet_pressure + gravity*(self.outlet_height*outlet_density-self.inlet_height*inlet_density))/
-        #             (A1/inlet_density - A2/outlet_density - resistance_coeff*A1/inlet_density))
-
-        # return K1*np.sqrt(2*K2)
 
         A1 = self.inlet_area
         A2 = self.outlet_area
@@ -161,7 +153,7 @@ class orifice(general):
         super().__init__(inlet_node, outlet_node)
         self.type = "orifice"
         self.length = 1
-        self.area = 1
+        self.area = 1   
 
         self.model = discharge_model()
 
@@ -175,13 +167,16 @@ class orifice(general):
         inlet_pressure = inlet_node_values[0]
         outlet_pressure = outlet_node_values[0]
 
-        inlet_density = properties.density(properties.temperature,inlet_pressure)
-        outlet_density = properties.density(properties.temperature,outlet_pressure)
+        inlet_temperature = inlet_node_values[1]
+        outlet_temperature = outlet_node_values[1]
+
+        inlet_density = properties.density(inlet_temperature,inlet_pressure)
+        outlet_density = properties.density(outlet_temperature,outlet_pressure)
 
         density = (inlet_density+outlet_density)/2
         area = (self.inlet_area+self.outlet_area)/2
 
-        viscosity = properties.viscosity(properties.temperature,(inlet_pressure+outlet_pressure)/2)
+        viscosity = properties.viscosity((inlet_temperature+outlet_temperature)/2,(inlet_pressure+outlet_pressure)/2)
         velocity = component_values[0]
 
         Re = density*self.diameter()*velocity/viscosity
@@ -203,8 +198,11 @@ class Kv_valve(general):
         inlet_pressure = inlet_node_values[0]
         outlet_pressure = outlet_node_values[0]
 
-        inlet_density = properties.density(properties.temperature,inlet_pressure)
-        outlet_density = properties.density(properties.temperature,outlet_pressure)
+        inlet_temperature = inlet_node_values[1]
+        outlet_temperature = outlet_node_values[1]
+
+        inlet_density = properties.density(inlet_temperature,inlet_pressure)
+        outlet_density = properties.density(outlet_temperature,outlet_pressure)
 
         density = (inlet_density+outlet_density)/2
 
