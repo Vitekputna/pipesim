@@ -1,7 +1,7 @@
 from topology import component
 from properties import properties
-from friction_factor import *
-from loss_models import *
+from friction_factor import laminar, Churchill
+from loss_models import sudden_expansion, sudden_contraction
 from discharge_models import discharge_model
 import numpy as np
     

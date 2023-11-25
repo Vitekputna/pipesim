@@ -2,6 +2,7 @@ import numpy as np
 from properties import properties
 from discharge_models import discharge_model
 
+
 class mass_flow_model:
     def __init__(self, length : float, diameter : float, discharge_model : discharge_model) -> None:
 
@@ -14,6 +15,7 @@ class mass_flow_model:
 
     def mass_flux(self, inlet_node_values: list, outlet_node_values: list, component_values: list, properties: properties) -> float:
         return 0.0
+
     
 class incompressible_model(mass_flow_model):
     def __init__(self, length: float, diameter: float, discharge_model: discharge_model) -> None:

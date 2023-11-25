@@ -1,7 +1,8 @@
-from pipesim import *
+from pipesim import pipesim
+from solvers import pressure_correction_solver
 from conditions import set_pressure
-from discharge_models import *
-from properties import *
+from properties import CRSprop_isothermal
+import numpy as np
 
 sim = pipesim()
 

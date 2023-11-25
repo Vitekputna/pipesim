@@ -1,9 +1,8 @@
-from pipesim import *
+from pipesim import pipesim
+from solvers import pressure_correction_solver
 from conditions import set_pressure
 from properties import constant_properties
-from properties import compresible_isothermal
-from components import *
-from CRSprop import CRSprop
+from components import pipe
 
 # Create pipesim object
 sim = pipesim()
@@ -42,4 +41,3 @@ sim.solve()
 print(sim.mass_fluxes())
 # sim.plot_residual()
 # sim.plot_node_values(0)
-
